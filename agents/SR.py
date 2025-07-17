@@ -40,10 +40,7 @@ class SR():
         for a in range(self.action_size):
             q_value = 0.0
             for next_state in self.SR[state_key][a]:
-                if next_state in self.R and len(self.R[next_state]) > 0:
-                    reward_next_state = np.mean([self.R[next_state][a_prime] for a_prime in self.R[next_state]])
-                else:
-                    reward_next_state = 0.0
+                reward_next_state = np.mean([self.R[next_state][a_prime] for a_prime in self.R[next_state]])
                 q_value += self.SR[state_key][a][next_state] * reward_next_state
             Q_values[a] = q_value
 

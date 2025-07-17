@@ -45,17 +45,11 @@ class MSR():
             q_value = 0.0
             # Topographic SR
             for next_state in self.SR_topo[state_key_topo][a]:
-                if next_state in self.R_topo and len(self.R_topo[next_state]) > 0:
-                    reward_next_state_topo = np.mean([self.R_topo[next_state][a_prime] for a_prime in self.R_topo[next_state]])
-                else:
-                    reward_next_state_topo = 0.0
+                reward_next_state_topo = np.mean([self.R_topo[next_state][a_prime] for a_prime in self.R_topo[next_state]])
                 q_value += self.SR_topo[state_key_topo][a][next_state] * reward_next_state_topo
             # Social SR
             for next_state in self.SR_social[state_key_social][a]:
-                if next_state in self.R_social and len(self.R_social[next_state]) > 0:
-                    reward_next_state_social = np.mean([self.R_social[next_state][a_prime] for a_prime in self.R_social[next_state]])
-                else:
-                    reward_next_state_social = 0.0
+                reward_next_state_social = np.mean([self.R_social[next_state][a_prime] for a_prime in self.R_social[next_state]])
                 q_value += self.SR_social[state_key_social][a][next_state] * reward_next_state_social
             Q_values[a] = q_value
 

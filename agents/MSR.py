@@ -151,9 +151,9 @@ class MSR():
             episode_reward += reward[0]
             
             # Get collision info
-            gnome = next((item for item in env.get_state()['Objects'] if item['Name'] == 'gnome'), None)
-            collisions_humanoid = gnome['Variables']['collisions_humanoid']
-            collisions_wall = gnome['Variables']['collisions_wall']
+            robot = next((item for item in env.get_state()['Objects'] if item['Name'] == 'robot'), None)
+            collisions_humanoid = robot['Variables']['collisions_humanoid']
+            collisions_wall = robot['Variables']['collisions_wall']
             
             self.update_sr(
                 state_key_topo, state_key_social, action,

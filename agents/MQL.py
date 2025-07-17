@@ -105,9 +105,9 @@ class MQL():
             
             total_reward += reward[0]
 
-            gnome = next((item for item in env.get_state()['Objects'] if item['Name'] == 'gnome'), None)
-            collisions_humanoid = gnome['Variables']['collisions_humanoid']
-            collisions_wall = gnome['Variables']['collisions_wall']
+            robot = next((item for item in env.get_state()['Objects'] if item['Name'] == 'robot'), None)
+            collisions_humanoid = robot['Variables']['collisions_humanoid']
+            collisions_wall = robot['Variables']['collisions_wall']
             
             self.update(phi_state, action, reward[0], done, phi_next)
             if done or truncated:

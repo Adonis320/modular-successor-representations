@@ -1,7 +1,7 @@
 Version: "0.1"
 Environment:
   Name: humanoids
-  Description: A port of the games provided in the https://github.com/maximecb/gym-minigrid Dynamic obstacles environment, but you're a gnome avoiding ghosts to get to a gem.
+  Description: A port of the games provided in the https://github.com/maximecb/gym-minigrid Dynamic obstacles environment, but you're a robot avoiding ghosts to get to a gem.
   Observers:
     Sprite2D:
       TileSize: 24
@@ -22,12 +22,10 @@ Environment:
       Width: 5
       OffsetX: 0
       OffsetY: 0
-    AvatarObject: gnome
+    AvatarObject: robot
   Termination:
     Win:
-      - eq: [gem:count, 0] # If there are no boxes left
-    Lose:
-      - eq: [gnome:count, 0] # If there are no boxes left
+      - eq: [gem:count, 0] # Reached goal
   Levels:
     - |
       W  W  W  W  W  W  W  W  W
@@ -54,27 +52,27 @@ Actions:
         2:
           VectorToDest: [1, 0]   # Move right (X-axis increases)
     Behaviours:
-      # If the gnome moves into a humanoid
+      # If the robot moves into a humanoid
       - Src:
-          Object: gnome
+          Object: robot
           Commands:
             - reward: -101
             - incr: collisions_humanoid
         Dst:
-          Object: gnome
+          Object: robot
 
-      # The gnome and the humanoid can move into empty space
+      # The robot and the humanoid can move into empty space
       - Src:
-          Object: gnome
+          Object: robot
           Commands:
             - mov: _dest
             - reward: -1
         Dst:
           Object: _empty
 
-      # If the gnome moves into a gem object, the stick is removed, triggering a win condition
+      # If the robot moves into a gem object, the stick is removed, triggering a win condition
       - Src:
-          Object: gnome
+          Object: robot
           Commands:
             - mov: _dest
             - reward: 100
@@ -83,7 +81,7 @@ Actions:
           Commands:
             - remove: true
       - Src:
-          Object: gnome
+          Object: robot
           Commands:
             - reward: -100
             - incr: collisions_wall
@@ -132,17 +130,17 @@ Objects:
       Isometric:
         - Image: oryx/oryx_iso_dungeon/ore-6.png
 
-  - Name: gnome
+  - Name: robot
     Variables:
      - Name: collisions_humanoid
      - Name: collisions_wall
     MapCharacter: A
     Observers:
       Sprite2D:
-        - Image: oryx/oryx_fantasy/avatars/gnome1.png
+        - Image: oryx/oryx_fantasy/avatars/robot1.png
       Block2D:
         - Shape: triangle
           Color: [0.0, 0.0, 1.0]
           Scale: 0.8
       Isometric:
-        - Image: oryx/oryx_iso_dungeon/avatars/gnome-1.png
+        - Image: oryx/oryx_iso_dungeon/avatars/robot-1.png

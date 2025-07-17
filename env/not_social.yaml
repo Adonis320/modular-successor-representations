@@ -1,0 +1,148 @@
+Version: "0.1"
+Environment:
+  Name: humanoids
+  Description: A port of the games provided in the https://github.com/maximecb/gym-minigrid Dynamic obstacles environment, but you're a gnome avoiding ghosts to get to a gem.
+  Observers:
+    Sprite2D:
+      TileSize: 24
+      BackgroundTile: oryx/oryx_fantasy/floor2-2.png
+    Isometric:
+      TileSize: [32, 48]
+      IsoTileHeight: 16
+      IsoTileDepth: 4
+      BackgroundTile: oryx/oryx_iso_dungeon/grass-1.png
+    Block2D:
+      TileSize: 24
+  Player:
+    Count: 5
+    Observer:
+      RotateWithAvatar: true
+      TrackAvatar: true
+      Height: 5
+      Width: 5
+      OffsetX: 0
+      OffsetY: 0
+    AvatarObject: gnome
+  Termination:
+    Win:
+      - eq: [gem:count, 0] # If there are no boxes left
+    Lose:
+      - eq: [gnome:count, 0] # If there are no boxes left
+  Levels:
+    - |
+      W  W  W  W  W  W  W  W  W
+      W  A  .  .  W  .  .  .  W
+      W  .  .  .  .  .  .  .  W
+      W  .  .  .  W  .  .  .  W
+      W  W  .  W  W  W  .  W  W
+      W  .  .  .  W  .  .  .  W
+      W  .  .  .  .  .  .  .  W
+      W  .  .  .  W  .  .  g  W
+      W  W  W  W  W  W  W  W  W
+
+Actions:
+  # Define the move action
+  - Name: move
+    InputMapping:
+      Inputs:
+        3:
+          VectorToDest: [0, -1]  # Move up (Y-axis decreases)
+        1:
+          VectorToDest: [0, 1]   # Move down (Y-axis increases)
+        0:
+          VectorToDest: [-1, 0]  # Move left (X-axis decreases)
+        2:
+          VectorToDest: [1, 0]   # Move right (X-axis increases)
+    Behaviours:
+      # If the gnome moves into a humanoid
+      - Src:
+          Object: gnome
+          Commands:
+            - reward: -101
+            - incr: collisions_humanoid
+        Dst:
+          Object: gnome
+
+      # The gnome and the humanoid can move into empty space
+      - Src:
+          Object: gnome
+          Commands:
+            - mov: _dest
+            - reward: -1
+        Dst:
+          Object: _empty
+
+      # If the gnome moves into a gem object, the stick is removed, triggering a win condition
+      - Src:
+          Object: gnome
+          Commands:
+            - mov: _dest
+            - reward: 100
+        Dst:
+          Object: gem
+          Commands:
+            - remove: true
+      - Src:
+          Object: gnome
+          Commands:
+            - reward: -100
+            - incr: collisions_wall
+        Dst:
+          Object: wall
+
+Objects:
+  - Name: wall
+    MapCharacter: W
+    Observers:
+      Sprite2D:
+        - TilingMode: WALL_16
+          Image:
+            - oryx/oryx_fantasy/wall2-0.png
+            - oryx/oryx_fantasy/wall2-1.png
+            - oryx/oryx_fantasy/wall2-2.png
+            - oryx/oryx_fantasy/wall2-3.png
+            - oryx/oryx_fantasy/wall2-4.png
+            - oryx/oryx_fantasy/wall2-5.png
+            - oryx/oryx_fantasy/wall2-6.png
+            - oryx/oryx_fantasy/wall2-7.png
+            - oryx/oryx_fantasy/wall2-8.png
+            - oryx/oryx_fantasy/wall2-9.png
+            - oryx/oryx_fantasy/wall2-10.png
+            - oryx/oryx_fantasy/wall2-11.png
+            - oryx/oryx_fantasy/wall2-12.png
+            - oryx/oryx_fantasy/wall2-13.png
+            - oryx/oryx_fantasy/wall2-14.png
+            - oryx/oryx_fantasy/wall2-15.png
+      Block2D:
+        - Shape: square
+          Color: [0.7, 0.7, 0.7]
+          Scale: 1.0
+      Isometric:
+        - Image: oryx/oryx_iso_dungeon/bush-1.png
+
+  - Name: gem
+    MapCharacter: g
+    Observers:
+      Sprite2D:
+        - Image: oryx/oryx_fantasy/ore-6.png
+      Block2D:
+        - Shape: triangle
+          Color: [0.0, 1.0, 0.0]
+          Scale: 0.5
+      Isometric:
+        - Image: oryx/oryx_iso_dungeon/ore-6.png
+
+  - Name: gnome
+    Variables:
+     - Name: collisions_humanoid
+     - Name: collisions_wall
+    MapCharacter: A
+    Observers:
+      Sprite2D:
+        - Image: oryx/oryx_fantasy/avatars/gnome1.png
+      Block2D:
+        - Shape: triangle
+          Color: [0.0, 0.0, 1.0]
+          Scale: 0.8
+      Isometric:
+        - Image: oryx/oryx_iso_dungeon/avatars/gnome-1.png

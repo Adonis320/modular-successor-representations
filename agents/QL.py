@@ -15,7 +15,7 @@ class QL():
         self.controller = Controller()
 
     def sample_action(self, state, eval=False):
-        # Samples action using epsilon-greedy approach
+        # Samples action using epsilon-greedy
         if eval:
             epsilon = 0
         else:
@@ -26,7 +26,7 @@ class QL():
             action = int(np.argmax(self.q_values[state]))
         return action
     
-    def phi(self, obs):
+    def get_state(self, obs):
         goal = obs[0].flatten()
         agent = obs[1].flatten()
         walls = obs[2].flatten()
@@ -58,8 +58,8 @@ class QL():
         # Reset Humanoid Behaviour
         self.controller.reset()
 
-        phi_state = self.phi(obs)
-        state = str(phi_state)
+        state = self.get_state(obs)
+        state = str(state)
         total_reward = 0
 
         episode_length = 0
@@ -78,8 +78,8 @@ class QL():
             # Update Humanoid actions
             self.controller.update(reward)
 
-            phi_next =  self.phi(next_state[0])
-            next_state = str(phi_next)
+            next_state =  self.get_state(next_state[0])
+            next_state = str(next_state)
             
             total_reward += reward[0]
 

@@ -4,11 +4,11 @@ import math
 from humanoid_controller import *
 
 class SR():
-    def __init__(self, action_size, epsilon=0.05, gamma=0.99, learning_rate=0.01, w_learning_rate=0.01):
+    def __init__(self, action_size, epsilon=0.05, gamma=0.99, learning_rate=0.01, r_learning_rate=0.01):
         self.action_size = action_size
         
         # Use dictionaries for dynamic state space
-        # SR[state][action][next_state] = expected discounted visits to next_state
+        # SR[state][action][next_state]
         self.SR = defaultdict(lambda: defaultdict(lambda: defaultdict(float)))
         
         # Reward function R[state][action] = expected immediate reward
@@ -16,18 +16,18 @@ class SR():
         
         self.epsilon = epsilon
         self.gamma = gamma
-        self.w_learning_rate = w_learning_rate
+        self.r_learning_rate = r_learning_rate
         self.learning_rate = learning_rate
 
         self.controller = Controller()
 
     def get_state_key(self, obs):
         # Convert observation to hashable state key
-        phi = self.phi(obs)
-        return tuple(phi.astype(int))
+        state = self.get_state(obs)
+        return tuple(state.astype(int))
     
     def sample_action(self, state_key, eval=False):
-        # Sample action using epsilon-greedy with SR-based Q-values
+        # Sample action using epsilon-greedy
         if eval:
             epsilon = 0
         else:
@@ -69,9 +69,9 @@ class SR():
         # Update reward function
         current_r = self.R[state_key][action]
         td_error = reward - current_r
-        self.R[state_key][action] += self.w_learning_rate * td_error
+        self.R[state_key][action] += self.r_learning_rate * td_error
 
-    def phi(self, obs):
+    def get_state(self, obs):
         # Extract features from observation for state representation
         goal = obs[0].flatten()
         agent = obs[1].flatten()
@@ -84,7 +84,7 @@ class SR():
     def act(self, env, obs, eval, reverse, upd_social=True):
         # Reset Humanoid Behaviour
         self.controller.reset()
-        # Run episode with SR learning
+
         state_key = self.get_state_key(obs)
         
         episode_reward = 0

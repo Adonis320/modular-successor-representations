@@ -4,11 +4,11 @@ import math
 from humanoid_controller import *
 
 class MSR():
-    def __init__(self, action_size, epsilon=0.05, gamma=0.99, learning_rate_topo=0.01, learning_rate_social=0.01, w_learning_rate_topo=0.01, w_learning_rate_social=0.01):
+    def __init__(self, action_size, epsilon=0.05, gamma=0.99, learning_rate_topo=0.01, learning_rate_social=0.01, r_learning_rate_topo=0.01, r_learning_rate_social=0.01):
         self.action_size = action_size
         
         # Use dictionaries for dynamic state space
-        # SR[state][action][next_state] = expected discounted visits to next_state
+        # SR[state][action][next_state]
         self.SR_topo = defaultdict(lambda: defaultdict(lambda: defaultdict(float)))
         self.SR_social = defaultdict(lambda: defaultdict(lambda: defaultdict(float)))
         
@@ -18,20 +18,19 @@ class MSR():
 
         self.epsilon = epsilon
         self.gamma = gamma
-        self.w_learning_rate_topo = w_learning_rate_topo
+        self.r_learning_rate_topo = r_learning_rate_topo
         self.learning_rate_topo = learning_rate_topo
-        self.w_learning_rate_social = w_learning_rate_social
+        self.r_learning_rate_social = r_learning_rate_social
         self.learning_rate_social = learning_rate_social
 
         self.controller = Controller()
 
     def get_state_key(self, obs):
-        # Convert observation to hashable state key
-        phi_topo, phi_social = self.phi(obs)
-        return tuple(phi_topo.astype(int)), tuple(phi_social.astype(int))   # Convert to int for discrete states
+        feat_topo, feat_social = self.get_features(obs)
+        return tuple(feat_topo.astype(int)), tuple(feat_social.astype(int))
 
     def sample_action(self, state_key_topo, state_key_social, eval=False):
-        # Sample action using epsilon-greedy with SR-based Q-values
+        # Sample action using epsilon-greedy
         if eval:
             epsilon = 0
         else:
@@ -97,15 +96,15 @@ class MSR():
         # Topographic reward update
         current_r_topo = self.R_topo[state_key_topo][action]
         td_error_topo = reward - current_r_topo
-        self.R_topo[state_key_topo][action] += self.w_learning_rate_topo * td_error_topo
+        self.R_topo[state_key_topo][action] += self.r_learning_rate_topo * td_error_topo
 
         if upd_social:
             # Social reward update
             current_r_social = self.R_social[state_key_social][action]
             td_error_social = reward - current_r_social
-            self.R_social[state_key_social][action] += self.w_learning_rate_social * td_error_social
+            self.R_social[state_key_social][action] += self.r_learning_rate_social * td_error_social
 
-    def phi(self, obs):
+    def get_features(self, obs):
         # Extract features from observation for state representation
         goal = obs[0].flatten()
         agent = obs[1].flatten()

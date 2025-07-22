@@ -10,14 +10,13 @@ class MQL():
         self.q_values_topo = defaultdict(lambda: np.zeros(action_size))
         self.q_values_social = defaultdict(lambda: np.zeros(action_size))
         self.gamma = 0.99
-        self.learning_rate = 0.2
         self.gamma = gamma
         self.epsilon = epsilon
         self.learning_rate = learning_rate
         self.controller = Controller()
 
-    def sample_action(self, phi_state, eval=False):
-        features_topo, features_social = phi_state
+    def sample_action(self, state, eval=False):
+        features_topo, features_social = state
         key_topo = str(features_topo)
         key_social = str(features_social)
         q_topo = self.q_values_topo[key_topo]
@@ -34,7 +33,7 @@ class MQL():
             action = int(np.argmax(q_sum))
         return action
     
-    def phi(self, obs):
+    def get_features(self, obs):
         goal = obs[0].flatten()
         agent = obs[1].flatten()
         walls = obs[2].flatten()
@@ -46,15 +45,15 @@ class MQL():
     
     def update(
         self,
-        phi_state,
+        state,
         action: int,
         reward: float,
         terminated: bool,
-        phi_next
+        next_state
     ):
         # Updates the Q-values for both topographic and social features.
-        features_topo, features_social = phi_state
-        next_topo, next_social = phi_next
+        features_topo, features_social = state
+        next_topo, next_social = next_state
 
         key_topo = str(features_topo)
         key_social = str(features_social)
@@ -83,7 +82,7 @@ class MQL():
         # Reset Humanoid Behaviour
         self.controller.reset()
 
-        phi_state = self.phi(obs)
+        state = self.get_features(obs)
         total_reward = 0
 
         episode_length = 0
@@ -94,14 +93,14 @@ class MQL():
             # Get Humanoid actions
             action_1, action_2, action_3, action_4 = self.controller.get_action(reverse)
             # Epsilon-greedy action selection
-            action = self.sample_action(phi_state, eval)
+            action = self.sample_action(state, eval)
             # Take action
             next_state, reward, done, truncated, info = env.step([action, action_1, action_2, action_3, action_4])
 
             # Update Humanoid actions
             self.controller.update(reward)
 
-            phi_next =  self.phi(next_state[0])
+            next_state =  self.get_features(next_state[0])
             
             total_reward += reward[0]
 
@@ -109,10 +108,10 @@ class MQL():
             collisions_humanoid = robot['Variables']['collisions_humanoid']
             collisions_wall = robot['Variables']['collisions_wall']
             
-            self.update(phi_state, action, reward[0], done, phi_next)
+            self.update(state, action, reward[0], done, next_state)
             if done or truncated:
                 break
             episode_length += 1
-            phi_state = phi_next
+            state = next_state
 
         return  episode_length, total_reward, collisions_humanoid, collisions_wall
